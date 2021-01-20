@@ -68,7 +68,7 @@ COM	##.*[\n]
 
 {DIGIT}+{LETTER_UNDERSCORE}+{DIGIT_OR_LETTER}*     {printf("Error at line %i, column %i: identifier \"%s\" must begin with a letter\n",currLine, currPos, yytext);currPos+=yyleng;exit(0);}
 [_]+[a-zA-Z_0-9]*                                  {printf("Error at line %i, column %i: identifier \"%s\" must begin with a letter\n",currLine, currPos, yytext);currPos+=yyleng;exit(0);}
-{LETTER}({CHAR}*{DIGIT_OR_LETTER}+)[_]             {printf("Error at line %i, column %i: identiifier \"%s\" cannot end with a underscore\n",currLine, currPos, yytext);currPos+=yyleng;exit(0);}
+[a-zA-Z_0-9]*[_]+             {printf("Error at line %i, column %i: identiifier \"%s\" cannot end with a underscore\n",currLine, currPos, yytext);currPos+=yyleng;exit(0);}
 
 
 
