@@ -2,8 +2,12 @@
    int currLine = 1, currPos = 0;
 %}
 
-DIGIT    [0-9]+
-IDENT   [a-zA-Z][_a-zA-Z0-9]*
+DIGIT               [0-9]
+LETTER              [a-zA-Z]
+LETTER_UNDERSCORE   [a-zA-Z_]
+DIGIT_UNDERSCORE    [0-9_]
+CHAR                [0-9a-zA-Z_]
+DIGIT_OR_LETTER     [0-9a-zA-Z]
 COM	##.*[\n]
 
 %%
@@ -59,12 +63,13 @@ COM	##.*[\n]
 ":="            {printf("ASSIGN\n");currPos++;}
 
 {COM}		currPos++; currPos= 0;	
-{IDENT}		{printf("IDENT %s\n", yytext);currPos+=yyleng;}
-{DIGIT}		{printf("NUMBER %s\n", yytext);currPos+=yyleng;}
+{LETTER}({CHAR}*{DIGIT_OR_LETTER}+)?		{printf("IDENT %s\n", yytext);currPos+=yyleng;}
+{DIGIT}+	{printf("NUMBER %s\n", yytext);currPos+=yyleng;}
 
-[0-9]+[a-zA-Z_]+[a-zA-Z_0-9]* {printf("Error at line %i, column %i: identifier \"%s\" must begin with a letter\n",currLine, currPos, yytext);currPos+=yyleng;exit(0);}	
-[_]+[a-zA-Z_0-9]*             {printf("Error at line %i, column %i: identifier \"%s\" must begin with a letter\n",currLine, currPos, yytext);currPos+=yyleng;exit(0);}
-[a-zA-Z_0-9]*[_]+            {printf("Error at line %i, column %i: identiifier \"%s\" cannot end with a underscore\n",currLine, currPos, yytext);currPos+=yyleng;exit(0);}
+{DIGIT}+{LETTER_UNDERSCORE}+{DIGIT_OR_LETTER}*     {printf("Error at line %i, column %i: identifier \"%s\" must begin with a letter\n",currLine, currPos, yytext);currPos+=yyleng;exit(0);}
+[_]+[a-zA-Z_0-9]*                                  {printf("Error at line %i, column %i: identifier \"%s\" must begin with a letter\n",currLine, currPos, yytext);currPos+=yyleng;exit(0);}
+{LETTER}({CHAR}*{DIGIT_OR_LETTER}+)[_]             {printf("Error at line %i, column %i: identiifier \"%s\" cannot end with a underscore\n",currLine, currPos, yytext);currPos+=yyleng;exit(0);}
+
 
 
 [ \t]+         {/* ignore spaces */ currPos += yyleng;}
