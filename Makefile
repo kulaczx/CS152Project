@@ -6,5 +6,5 @@ run: all
 lexer: flexfile
 	gcc -o lexer lex.yy.c -lfl
 
-flexfile: mini_1.lex
-	flex mini_1.lex
+flexfile: 862067482-862127794.lex
+	flex 862067482-862127794.lex
