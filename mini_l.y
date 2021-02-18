@@ -77,6 +77,7 @@
 %right NOT
 %right UMINUS
 
+%start program
 
 %%
 
