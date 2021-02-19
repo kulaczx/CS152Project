@@ -92,7 +92,7 @@ functions:		{printf("functions -> epsilon\n");}
 function:	FUNCTION ident SEMICOLON BEGIN_PARAMS declarations END_PARAMS BEGIN_LOCALS declarations END_LOCALS BEGIN_BODY statements END_BODY {printf("function -> FUNCTION IDENT SEMICOLON BEGIN_PARAMS declarations END_PARAMS BEGIN_LOCALS declarations END_LOCALS BEGIN_BODY statements END_BODY\n");}
 		;
 
-ident:		IDENT {printf("ident -> IDENT %s\n", $1);}
+ident:		IDENT {printf("ident -> IDENT %s \n", $1);}
 		;
 
 identifiers:	ident {printf("identifiers -> ident\n");}
@@ -114,8 +114,11 @@ statements:		{printf("statements -> epsilon\n");}
 
 statement:	WRITE vars {printf("statement -> WRITE vars\n");}
 		| IF bool_exp THEN statements ENDIF {printf("statement -> IF bool_exp THEN statements ENDIF\n");}
+		| IF bool_exp THEN statements ELSE statements ENDIF {printf("statement -> IF bool_expr THEN statements ELSE statements ENDIF\n");}
+         	| WHILE bool_exp BEGINLOOP statements ENDLOOP {printf("statement -> WHILE bool_expr BEGINLOOP statements ENDLOOP\n");}
 		| BREAK {printf("statement -> BREAK\n");}
 		| DO BEGINLOOP statements ENDLOOP WHILE bool_exp {printf("statement -> DO BEGINLOOP statements ENDLOOP WHILE bool_exp\n");}
+		| RETURN expression {printf("statement ->RETURN expression\n");}
 		| READ vars {printf("statement -> READ vars\n");}
 		| var ASSIGN expression {printf("statement -> var ASSIGN expression\n");}
 		;
@@ -128,6 +131,12 @@ relation_and_exp:  relation_exp {printf("relation_and_exp -> relation_exp\n");}
 
 relation_exp:	expression comp	expression {printf("relation_exp -> expression comp expression\n");}
 		| TRUE {printf("relation_exp -> TRUE\n");}
+		| FALSE {printf("relation_exp -> FALSE\n");}
+             	| L_PAREN bool_exp R_PAREN {printf("relation_exp -> L_PAREN bool_expr R_PAREN\n");}
+		| NOT expression comp expression {printf("relation_exp -> NOT expression comp expression\n");}
+             	| NOT TRUE {printf("relation_exp -> NOT TRUE\n");}
+             	| NOT FALSE {printf("relation_exp -> NOT FALSE\n");}
+             	| NOT L_PAREN bool_exp R_PAREN {printf("relation_exp -> NOT L_PAREN bool_expr R_PAREN\n");}
 		;
 
 expression:	multiplicative_expression {printf("expression -> multiplicative_expression\n");}
@@ -142,10 +151,18 @@ multiplicative_expression:    term {printf("multiplicative_expression -> term\n"
 
 comp:		EQ {printf("comp -> EQ\n");}
 		| GTE {printf("comp -> GTE\n");}
+		|  NEQ {printf("comp -> NEQ\n");}
+   		|  LT {printf("comp -> LT\n");}
+   		|  GT {printf("comp -> GT\n");}
+   		|  LTE {printf("comp -> LTE\n");}
 		;
 
 term:		var {printf("term -> var\n");}
 		| NUMBER {printf("term -> NUMBER\n");}
+		| SUB var {printf("term -> SUB var\n");}
+		| SUB NUMBER {printf("term -> SUB NUMBER\n");}
+		| SUB L_PAREN expression R_PAREN {printf("term -> SUB L_PAREN expression R_PAREN\n");}	
+		| ident L_PAREN expression R_PAREN {printf("term -> identifier L_PAREN expression R_PAREN \n");}
 		;
 
 var:	    ident {printf("var -> ident\n");}

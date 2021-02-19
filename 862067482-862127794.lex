@@ -64,8 +64,8 @@ COM	##.*[\n]
 ":="            {printf("ASSIGN\n");currPos++;}
 
 {COM}		currPos++; currPos= 0;	
-{LETTER}({CHAR}*{DIGIT_OR_LETTER}+)?		{printf("IDENT %s\n", yytext);currPos+=yyleng;}
-{DIGIT}+	{printf("NUMBER %s\n", yytext);currPos+=yyleng;}
+{LETTER}({CHAR}*{DIGIT_OR_LETTER}+)?		{currPos+=yyleng; return IDENT;}
+{DIGIT}+	{currPos+=yyleng; return NUMBER;}
 
 {DIGIT}+{LETTER_UNDERSCORE}+{DIGIT_OR_LETTER}*     {printf("Error at line %i, column %i: identifier \"%s\" must begin with a letter\n",currLine, currPos, yytext);currPos+=yyleng;exit(0);}
 [_]+[a-zA-Z_0-9]*                                  {printf("Error at line %i, column %i: identifier \"%s\" must begin with a letter\n",currLine, currPos, yytext);currPos+=yyleng;exit(0);}
