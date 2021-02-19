@@ -75,7 +75,7 @@
 
 %right ASSIGN
 %right NOT
-%right UMINUS
+%nonassoc UMINUS
 
 %start program
 
