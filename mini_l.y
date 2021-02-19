@@ -47,18 +47,18 @@
 %token FALSE
 %token RETURN
 
-%token SUB
-%token ADD
-%token MULT
-%token DIV
-%token MOD
+%left SUB
+%left ADD
+%left MULT
+%left DIV
+%left MOD
 
-%token EQ
-%token NEQ
-%token LT
-%token GT
-%token LTE
-%token GTE
+%left EQ
+%left NEQ
+%left LT
+%left GT
+%left LTE
+%left GTE
 
 %token SEMICOLON
 %token COLON
