@@ -92,7 +92,7 @@ functions:		{printf("functions -> epsilon\n");}
 function:	FUNCTION ident SEMICOLON BEGIN_PARAMS declarations END_PARAMS BEGIN_LOCALS declarations END_LOCALS BEGIN_BODY statements END_BODY {printf("function -> FUNCTION IDENT SEMICOLON BEGIN_PARAMS declarations END_PARAMS BEGIN_LOCALS declarations END_LOCALS BEGIN_BODY statements END_BODY\n");}
 		;
 
-ident:		IDENT {printf("ident -> IDENT %s \n", $1);}
+ident:		IDENT {printf("ident -> IDENT %s \n", yytext);}
 		;
 
 identifiers:	ident {printf("identifiers -> ident\n");}

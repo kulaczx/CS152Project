@@ -13,55 +13,55 @@ COM	##.*[\n]
 
 %%
 
-"function"	{printf("FUNCTION\n"); currPos+= yyleng;}
-"beginparams"	{printf("BEGIN_PARAMS\n");currPos+=yyleng;}
-"endparams"	{printf("END_PARAMS\n");currPos+=yyleng;}
-"beginlocals"	{printf("BEGIN_LOCALS\n");currPos+=yyleng;}
-"endlocals"	{printf("END_LOCALS\n");currPos+=yyleng;}
-"beginbody"	{printf("BEGIN_BODY\n");currPos+=yyleng;}
-"endbody"	{printf("END_BODY\n");currPos+=yyleng;}
-"integer"	{printf("INTEGER\n");currPos+=yyleng;}
-"array"		{printf("ARRAY\n");currPos+=yyleng;}
-"of"		{printf("OF\n");currPos+=yyleng;}
-"if"		{printf("IF\n");currPos+=yyleng;}
-"then"		{printf("THEN\n");currPos+=yyleng;}
-"endif"		{printf("ENDIF\n");currPos+=yyleng;}
-"else"		{printf("ELSE\n");currPos+=yyleng;}
-"while"		{printf("WHILE\n");currPos+=yyleng;}
-"do"		{printf("DO\n");currPos+=yyleng;}
-"beginloop"     {printf("BEGINLOOP\n");currPos+=yyleng;}
-"endloop"       {printf("ENDLOOP\n");currPos+=yyleng;}
-"break"         {printf("BREAK\n");currPos+=yyleng;}
-"read"          {printf("READ\n");currPos+=yyleng;}
-"write"         {printf("WRITE\n");currPos+=yyleng;}
-"and"           {printf("AND\n");currPos+=yyleng;}
-"or"		{printf("OR\n");currPos+=yyleng;}
-"not"		{printf("NOT\n");currPos+=yyleng;}
-"true"		{printf("TRUE\n");currPos+=yyleng;}
-"false"		{printf("FALSE\n");currPos+=yyleng;}
-"return"	{printf("RETURN\n");currPos+=yyleng;}
+"function"	{currPos+= yyleng; return FUNCTION;}
+"beginparams"	{currPos+=yyleng; return BEGIN_PARAMS;}
+"endparams"	{currPos+=yyleng; return END_PARAMS;}
+"beginlocals"	{currPos+=yyleng; return BEGIN_LOCALS;}
+"endlocals"	{currPos+=yyleng; return END_LOCALS;}
+"beginbody"	{currPos+=yyleng; return BEGIN_BODY;}
+"endbody"	{currPos+=yyleng; return END_BODY;}
+"integer"	{currPos+=yyleng; return INTEGER;}
+"array"		{currPos+=yyleng; return ARRAY;}
+"of"		{currPos+=yyleng; return OF;}
+"if"		{currPos+=yyleng; return IF;}
+"then"		{currPos+=yyleng; return THEN;}
+"endif"		{currPos+=yyleng; return ENDIF;}
+"else"		{currPos+=yyleng; return ELSE;}
+"while"		{currPos+=yyleng; return WHILE;}
+"do"		{currPos+=yyleng; return DO;}
+"beginloop"     {currPos+=yyleng; return BEGINLOOP;}
+"endloop"       {currPos+=yyleng; return ENDLOOP;}
+"break"         {currPos+=yyleng; return BREAK;}
+"read"          {currPos+=yyleng; return READ;}
+"write"         {currPos+=yyleng; return WRITE;}
+"and"           {currPos+=yyleng; return AND;}
+"or"		{currPos+=yyleng; return OR;}
+"not"		{currPos+=yyleng; return NOT;}
+"true"		{currPos+=yyleng; return TRUE;}
+"false"		{currPos+=yyleng; return FALSE;}
+"return"	{currPos+=yyleng; return RETURN;}
 
-"-"		{printf("SUB\n");currPos++;}
-"+"             {printf("ADD\n");currPos++;}
-"*"             {printf("MULT\n");currPos++;}
-"/"             {printf("DIV\n");currPos++;}
-"%"             {printf("MOD\n");currPos++;}
+"-"		{currPos++; return SUB;}
+"+"             {currPos++; return ADD;}
+"*"             {currPos++; return MULT;}
+"/"             {currPos++; return DIV;}
+"%"             {currPos++; return MOD;}
 
-"=="		{printf("EQ\n");currPos+=2;}
-"<>"            {printf("NEQ\n");currPos+=2;}
-"<"             {printf("LT\n");currPos+=2;}
-">"             {printf("GT\n");currPos+=2;}
-"<="            {printf("LTE\n");currPos+=2;}
-">="            {printf("GTE\n");currPos+=2;}
+"=="		{currPos+=2; return EQ;}
+"<>"            {currPos+=2; return NEQ;}
+"<"             {currPos+=2; return LT;}
+">"             {currPos+=2; return GT;}
+"<="            {currPos+=2; return LTE;}
+">="            {currPos+=2; return GTE;}
 
-";" 		{printf("SEMICOLON\n");currPos++;}
-":"             {printf("COLON\n");currPos++;}
-","             {printf("COMMA\n");currPos++;}
-"("             {printf("L_PAREN\n");currPos++;}
-")"             {printf("R_PAREN\n");currPos++;}
-"["             {printf("L_SQUARE_BRACKET\n");currPos++;}
-"]"             {printf("R_SQUARE_BRACKET\n");currPos++;}
-":="            {printf("ASSIGN\n");currPos++;}
+";" 		{currPos++; return SEMICOLON;}
+":"             {currPos++; return COLON;}
+","             {currPos++; return COMMA;}
+"("             {currPos++; return L_PAREN;}
+")"             {currPos++; return R_PAREN;}
+"["             {currPos++; return L_SQUARE_BRACKET;}
+"]"             {currPos++; return R_SQUARE_BRACKET;}
+":="            {currPos++; return ASSIGN;}
 
 {COM}		currPos++; currPos= 0;	
 {LETTER}({CHAR}*{DIGIT_OR_LETTER}+)?		{currPos+=yyleng; return IDENT;}
