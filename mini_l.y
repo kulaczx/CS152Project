@@ -146,6 +146,8 @@ expression:	multiplicative_expression {printf("expression -> multiplicative_expr
 
 multiplicative_expression:    term {printf("multiplicative_expression -> term\n");}
 			| term MOD term {printf("multiplicative_expression -> term MOD term\n");}
+			| term MULT term {printf("multiplicative_expr -> term MULT term\n");}
+                   	| term DIV term {printf("multiplicative_expr -> term DIV term\n");}
 			;
 
 
