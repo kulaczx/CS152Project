@@ -8,17 +8,35 @@
  extern int currPos;
  extern const char* yytext;
  int yylex();
+ char empty[1] = "";
 %}
 
 %union{
   char* cval;
   int ival;
+
+  struct Statement{
+  	std::string* IR;
+  }state;
+
+  struct Expression{
+  	std::string* IR;
+  	std::string* ret_name;
+
+  }expr;
+
 }
 
 
 %error-verbose
 %type<ival> NUMBER
 %type<cval> IDENT
+
+%type<expr> ident
+%type<expr> declarations declaration identifiers var vars
+%type<state> statements statement
+%type<expr> expression bool_exp multiplicative_expression term relation_exp relation_and_exp comp
+
 %token FUNCTION
 %token BEGIN_PARAMS
 %token END_PARAMS
@@ -89,7 +107,33 @@ functions:		{printf("functions -> epsilon\n");}
 		| function functions  {printf("functions -> function functions\n");}
 		;
 
-function:	FUNCTION ident SEMICOLON BEGIN_PARAMS declarations END_PARAMS BEGIN_LOCALS declarations END_LOCALS BEGIN_BODY statements END_BODY {printf("function -> FUNCTION IDENT SEMICOLON BEGIN_PARAMS declarations END_PARAMS BEGIN_LOCALS declarations END_LOCALS BEGIN_BODY statements END_BODY\n");}
+function:	FUNCTION ident SEMICOLON BEGIN_PARAMS declarations END_PARAMS BEGIN_LOCALS declarations END_LOCALS BEGIN_BODY statements END_BODY
+{
+    std::string temp = "func";
+    temp.append($2.ret_name);
+    temp.append("\n");
+    temp.append($2.IR);
+    temp.append($5.IR);
+
+    std::string init_vals = $5.IR;
+    int nval = 0;
+    while((size_t pos = init_vals.find(".")) != std::strinf::npos){
+    	init_vals.replace(pos,1,"=");
+    	std::string content = ",$";
+    	content.append(std::to_string(nvals++));
+    	content.append("\n");
+    	init_vals.replace(init_vals.find("\n", pos), 1, content);
+    }
+    temp.append(init_vals);
+    temp.append($8.IR);
+    std::string stm($11.IR);
+    if(stm.find("continue") != std::string::npos){
+    	printf("TODO error msg");
+    }
+    temp.append(stm);
+    temp.append(endfunc)
+
+}
 		;
 
 ident:		IDENT {printf("ident -> IDENT %s \n", yytext);}
@@ -99,11 +143,48 @@ identifiers:	ident {printf("identifiers -> ident\n");}
 		| ident COMMA identifiers {printf("identifiers -> ident COMMA identifiers\n");}
 		;
 
-declarations:		{printf("declarations -> epsilon\n");}
-		| declaration SEMICOLON declarations {printf("declarations -> declaration SEMICOLON declarations\n");}
+declarations:		%empty
+		{
+			$$.ret_name = strdup(empty);
+			$$.IR = strdup(empty);
+		}
+		| declaration SEMICOLON declarations {
+			std::string temp = $1.IR;
+			temp.append(#3.IR);
+
+			$$.IR = str.dup(temp.c_str());
+			$$.ret_name = strdup(empty);
+		}
 		;
 
-declaration:	identifiers COLON INTEGER {printf("declaration -> identifiers COLON INTEGER\n");}
+declaration:	identifiers COLON INTEGER
+ 		{
+ 			std::string temp;
+			std::string variables($1.ret_name), variable;
+			bool stop = false;
+
+			size_t prev = 0, current = 0;
+
+			while(!stop){
+				current = variables.find("|", prev);
+				if(current == std::string::npos){
+					temp.append(". ");
+					variable = variables.substr(prev, current);
+					temp.append(variable);
+					temp.append("\n");
+					stop = true;
+				}
+				else{
+					size_t l = current - prev;
+					temp.append(". ");
+					variable = variables.substr(prev, l);
+					temp.append(variable);
+					temp.append("\n");
+				}
+			}
+			$$.IR = strdup(temp.c_str());
+			$$.ret_name = strdup(empty);
+		}
 		| identifiers COLON ARRAY L_SQUARE_BRACKET NUMBER R_SQUARE_BRACKET OF INTEGER {printf("declaration -> identifiers COLON ARRAY L_SQUARE_BRACKET NUMBER R_SQUARE_BRACKET OF INTEGER\n");}
 		
 		;
