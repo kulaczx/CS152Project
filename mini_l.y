@@ -1,10 +1,8 @@
 %{
+ #include "header.h"
  #include <stdio.h>
  #include <stdlib.h>
- #include <iostream>
  #include <string>
- #include <vector>
- #include <sstream> 
  
 void yyerror(const char *msg);
  extern int currLine;
@@ -17,6 +15,10 @@ void yyerror(const char *msg);
 %}
 
 %union{
+ #include "header.h"
+ #include <stdio.h>
+ #include <stdlib.h>
+ #include <string.h>
   char* cval;
   int ival;
 
@@ -30,7 +32,6 @@ void yyerror(const char *msg);
 
   }expr;
 
-  static std::vector<std::string> reservedWords = {"FUNCTION", "BEGIN_PARAMS", "END_PARAMS", "BEGIN_LOCALS", "END_LOCALS", "BEGIN_BODY", "END_BODY", "INTEGER", "ARRAY", "OF", "IF", "THEN", "ENDIF", "ELSE", "WHILE", "DO", "FOR", "BEGINLOOP", "ENDLOOP", "CONTINUE", "READ", "WRITE", "TRUE", "FALSE", "RETURN", "SEMICOLON", "COLON", "COMMA", "L_PAREN", "R_PAREN", "L_SQUARE_BRACKET", "R_SQUARE_BRACKET", "ASSIGN", "IDENT", "NUMBER", "ERROR", "IDENT", "NUMBER", "ASSIGN", "OR", "AND", "NOT", "LT", "LTE", "GT", "GTE", "EQ", "NEQ", "ADD", "SUB", "MULT", "DIV", "MOD", "UMINUS", "L_SQUARE_BRACKET", "R_SQUARE_BRACKET", "L_PAREN", "R_PAREN", "function", "begin_params", "end_params", "begin_locals", "end_locals", "begin_body", "end_body", "integer", "array", "of", "if", "then", "endif", "else", "while", "do", "for", "beginloop", "endloop", "continue", "read", "write", "true", "false", "return", "semicolon", "colon", "comma", "l_paren", "r_paren", "l_square_bracket", "r_square_bracket", "assign", "ident", "number", "error", "ident", "number", "assign", "or", "and", "not", "lt", "lte", "gt", "gte", "eq", "neq", "add", "sub", "mult", "div", "mod", "uminus", "l_square_bracket", "r_square_bracket", "l_paren", "r_paren"};
 
 }
 
