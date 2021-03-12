@@ -29,6 +29,7 @@ void yyerror(const char *msg);
   struct Expression{
   	std::string* IR;
   	std::string* ret_name;
+  	bool check;
 
   }expr;
 
@@ -181,16 +182,16 @@ declarations:		%empty
 declaration:	identifiers COLON INTEGER
  		{
  			std::string temp;
-			std::string variables($1.ret_name), variable;
+			std::string v($1.ret_name), variable;
 			bool stop = false;
 
 			size_t prev = 0, current = 0;
 
 			while(!stop){
-				current = variables.find("|", prev);
+				current = v.find("|", prev);
 				if(current == std::string::npos){
 					temp.append(". ");
-					variable = variables.substr(prev, current);
+					variable = v.substr(prev, current);
 					temp.append(variable);
 					temp.append("\n");
 					stop = false;
@@ -198,7 +199,7 @@ declaration:	identifiers COLON INTEGER
 				else{
 					size_t l = current - prev;
 					temp.append(". ");
-					variable = variables.substr(prev, l);
+					variable = v.substr(prev, l);
 					temp.append(variable);
 					temp.append("\n");
 				}
@@ -206,7 +207,45 @@ declaration:	identifiers COLON INTEGER
 			$$.IR = strdup(temp.c_str());
 			$$.ret_name = strdup(empty);
 		}
-		| identifiers COLON ARRAY L_SQUARE_BRACKET NUMBER R_SQUARE_BRACKET OF INTEGER {printf("declaration -> identifiers COLON ARRAY L_SQUARE_BRACKET NUMBER R_SQUARE_BRACKET OF INTEGER\n");}
+		| identifiers COLON ARRAY L_SQUARE_BRACKET NUMBER R_SQUARE_BRACKET OF INTEGER
+		{
+			std::string temp, v($1.ret_name), variable;
+			bool stop = false;
+			if($5 <= 0){
+				char err[128];
+				snprintf(temp, 128,"Error, array size less than 1");
+				yyerror(temp);
+			}
+
+			size_t prev = 0, current = 0;
+			while(!stop){
+				current = v.find("|", prev);
+				if(current == std::string::npos){
+					temp.append(variable);
+					temp.append(", ");
+					temp.append(std::to_string($5));
+					temp.append("\n");
+					stop = true;
+				}
+				else{
+					size_t l = current - prev;
+					temp.append(".[] ");
+					variable = v.substr(prev, l);
+					temp.append(variable);
+					temp.append(", ");
+					temp.append(std::to_string($5));
+					temp.append("\n");
+
+				}
+				variables.insert(std::pair<std::string, int>(variable, $5);
+
+				prev = current +1;
+			}
+
+			$$.IR = strdup(temp.c_str());
+			$$.ret_name = strdup(empty);
+
+		}
 		
 		;
 
@@ -218,15 +257,180 @@ statements:		{
 		}
 		;
 
-statement:	WRITE vars {printf("statement -> WRITE vars\n");}
-		| IF bool_exp THEN statements ENDIF {printf("statement -> IF bool_exp THEN statements ENDIF\n");}
-		| IF bool_exp THEN statements ELSE statements ENDIF {printf("statement -> IF bool_expr THEN statements ELSE statements ENDIF\n");}
-         	| WHILE bool_exp BEGINLOOP statements ENDLOOP {printf("statement -> WHILE bool_expr BEGINLOOP statements ENDLOOP\n");}
-		| BREAK {printf("statement -> BREAK\n");}
-		| DO BEGINLOOP statements ENDLOOP WHILE bool_exp {printf("statement -> DO BEGINLOOP statements ENDLOOP WHILE bool_exp\n");}
-		| RETURN expression {printf("statement ->RETURN expression\n");}
-		| READ vars {printf("statement -> READ vars\n");}
-		| var ASSIGN expression {printf("statement -> var ASSIGN expression\n");}
+statement:	WRITE vars {
+			std::string temp = $2.IR;
+			size_t pos = 0;
+			while(true){
+				pos = temp.find("|", pos);
+				if(pos == std::string::npos){break;}
+				temp.replace(pos, 1, ">");
+			}
+
+			$$.IR = strdup(temp.c_str());
+		}
+		| IF bool_exp THEN statements ENDIF {
+			std::string then = newLabel(), end = new:abel(), temp;
+
+			temp.append($2.IR);
+			temp.append("?:= ");
+			temp.append(then);
+			temp.append(", ");
+			temp.append($2.ret_name);
+			temp.append(":= ");
+			temp.append(end);
+			temp.append("\n");
+			temp.append(": ");
+			temp.append(then);
+			temp.append("\n");
+			temp.append($4.IR);
+			temp.append(": ");
+			temp.append(end);
+			temp.append("\n");
+
+			$$.IR = strdup(temp.c_str());
+		}
+		| IF bool_exp THEN statements ELSE statements ENDIF {
+			std::string then = newLabel(), end = new:abel(), temp;
+
+			temp.append($2.IR);
+			temp.append("?:= ");
+			temp.append(then);
+			temp.append(", ");
+			temp.append($2.ret_name);
+			temp.append("\n");
+			temp.append($5.IR);
+			temp.append($6.IR);
+			temp.append(":= ");
+			temp.append(end);
+			temp.append("\n");
+			temp.append(": ");
+			temp.append(then);
+			temp.append("\n");
+			temp.append($4.IR);
+			temp.append(": ");
+			temp.append(end);
+			temp.append("\n");
+
+			$$.IR = strdup(temp.c_str());
+
+		}
+         	| WHILE bool_exp BEGINLOOP statements ENDLOOP {
+         		std::string temp, While = newLabel(), bloop = newLabel(), eLoop = newLabel();
+         		std::string statement = $4.IR, jp;
+         		jp.append(":= ");
+         		jp.append(While);
+         		while(statement.find("continue") != std::string::npos){
+         			statement.replace(statement.find("continue"), 8, jp);
+         		}
+
+         		  temp.append(": ");
+                          temp.append(While);
+                          temp.append("\n");
+                          temp.append($2.IR);
+                          temp.append("?:= ");
+                          temp.append(bLoop);
+                          temp.append(", ");
+                          temp.append($2.rett_name);
+                          temp.append("\n");
+                          temp.append(":= ");
+                          temp.append(eLoop);
+                          temp.append("\n");
+                          temp.append(": ");
+                          temp.append(bloop);
+                          temp.append("\n");
+                          temp.append(statement);
+                          temp.append(":= ");
+                          temp.append(While);
+                          temp.append("\n");
+                          temp.append(": ");
+                          temp.append(eLoop);
+                          temp.append("\n");
+
+                          $$.IR = strdup(temp.c_str());
+
+         	}
+		| BREAK {
+			std::string breakstr = "break\n";
+			$$.IR = strdup(breakstr.c_str()));
+		}
+		| DO BEGINLOOP statements ENDLOOP WHILE bool_exp {
+			std::string temp, While = newLabel(), bloop = newLabel(), eLoop = newLabel();
+			std::string statement = $4.IR, jp;
+			jp.append(":= ");
+			jp.append(While);
+			while(statement.find("continue") != std::string::npos){
+				statement.replace(statement.find("continue"), 8, jp);
+			}
+
+			  temp.append(": ");
+			  temp.append(bLoop);
+			  temp.append("\n");
+			  temp.append(statement);
+			  temp.append(": ");
+			  temp.append(While);
+			  temp.append("\n");
+			  temp.append($6.IR);
+			  temp.append("?:= ");
+			  temp.append(bLoop);
+			  temp.append(", ");
+			  temp.append($6.ret_name);
+			  temp.append("\n");
+
+			  $$.IR = strdup(temp.c_str());
+		}
+		| RETURN expression {
+			std::string temp;
+			temp.append($2.IR);
+			temp.append("ret ");
+			temp.append($2.ret_name);
+			temp.append("\n");
+			$$.code = strdup(temp.c_str());
+		}
+		| READ vars {
+			std::string temp = $2.IR;
+			size_t pos = 0;
+			while(true){
+				pos = temp.find("|", pos);
+				if(pos == std::string::npos){break;}
+				temp.replace(pos, 1, "<");
+			}
+
+			$$.IR = strdup(temp.c_str());
+		}
+		| var ASSIGN expression {
+			std::temp;
+			temp.append($1.IR);
+			temp.append($3.IR);
+			std::string temp2 = $3.ret_name;
+			if($1.check && $3.check){
+				temp2 = newTemp();
+				temp.append(". ");
+				temp.append(temp2);
+				temp.append("\n");
+				temp.append("=[] ");
+				temp.append(temp2);
+				temp.append(", ");
+				temp.append($3.ret_name);
+				temp.append("\n");
+				temp.append("[]= ");
+
+			}
+			else if($1.check){
+				temp.append("[]= ");
+			}
+			else if($3.check){
+				temp.append("=[] ");
+			}
+			else{
+				temp.append("= ");
+			}
+			temp.append($1.ret_name);
+			temp.append(", ");
+			temp.append(temp2);
+			temp.append("\n");
+
+			$$.code = strdup(teemp.c_str());
+		}
 		;
 
 bool_exp:	relation_and_exp {
