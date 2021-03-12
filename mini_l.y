@@ -1,14 +1,19 @@
 %{
  #include <stdio.h>
  #include <stdlib.h>
- #include <string.h>
-
- void yyerror(const char *msg);
+ #include <iostream>
+ #include <string>
+ #include <vector>
+ #include <sstream> 
+ 
+void yyerror(const char *msg);
  extern int currLine;
  extern int currPos;
  extern const char* yytext;
  int yylex();
  char empty[1] = "";
+ std::string Temp2();
+ std::string Label2();
 %}
 
 %union{
@@ -24,6 +29,8 @@
   	std::string* ret_name;
 
   }expr;
+
+  static std::vector<std::string> reservedWords = {"FUNCTION", "BEGIN_PARAMS", "END_PARAMS", "BEGIN_LOCALS", "END_LOCALS", "BEGIN_BODY", "END_BODY", "INTEGER", "ARRAY", "OF", "IF", "THEN", "ENDIF", "ELSE", "WHILE", "DO", "FOR", "BEGINLOOP", "ENDLOOP", "CONTINUE", "READ", "WRITE", "TRUE", "FALSE", "RETURN", "SEMICOLON", "COLON", "COMMA", "L_PAREN", "R_PAREN", "L_SQUARE_BRACKET", "R_SQUARE_BRACKET", "ASSIGN", "IDENT", "NUMBER", "ERROR", "IDENT", "NUMBER", "ASSIGN", "OR", "AND", "NOT", "LT", "LTE", "GT", "GTE", "EQ", "NEQ", "ADD", "SUB", "MULT", "DIV", "MOD", "UMINUS", "L_SQUARE_BRACKET", "R_SQUARE_BRACKET", "L_PAREN", "R_PAREN", "function", "begin_params", "end_params", "begin_locals", "end_locals", "begin_body", "end_body", "integer", "array", "of", "if", "then", "endif", "else", "while", "do", "for", "beginloop", "endloop", "continue", "read", "write", "true", "false", "return", "semicolon", "colon", "comma", "l_paren", "r_paren", "l_square_bracket", "r_square_bracket", "assign", "ident", "number", "error", "ident", "number", "assign", "or", "and", "not", "lt", "lte", "gt", "gte", "eq", "neq", "add", "sub", "mult", "div", "mod", "uminus", "l_square_bracket", "r_square_bracket", "l_paren", "r_paren"};
 
 }
 
@@ -100,11 +107,11 @@
 %%
 
 
-program:	functions {printf("prog_start -> functions\n");}
+program:	functions {}
 		;
 
-functions:		{printf("functions -> epsilon\n");}
-		| function functions  {printf("functions -> function functions\n");}
+functions:	
+		| function functions  {}
 		;
 
 function:	FUNCTION ident SEMICOLON BEGIN_PARAMS declarations END_PARAMS BEGIN_LOCALS declarations END_LOCALS BEGIN_BODY statements END_BODY
@@ -131,16 +138,29 @@ function:	FUNCTION ident SEMICOLON BEGIN_PARAMS declarations END_PARAMS BEGIN_LO
     	printf("TODO error msg");
     }
     temp.append(stm);
-    temp.append(endfunc)
+    temp.append("endfunc\n");
 
 }
 		;
 
-ident:		IDENT {printf("ident -> IDENT %s \n", yytext);}
+ident:		IDENT {
+			$$ = $1;
+		}
 		;
 
-identifiers:	ident {printf("identifiers -> ident\n");}
-		| ident COMMA identifiers {printf("identifiers -> ident COMMA identifiers\n");}
+identifiers:	ident {
+			$$.ret_name = strdup($1.ret_name);
+                        $$.IR = strdup(empty);
+		}
+		| ident COMMA identifiers {
+			std::string temp;
+			temp.append($1.ret_name);
+			temp.append("|");
+			temp.append($3.ret_name);
+
+			$$.ret_name = strdup(temp.c_str());
+			$$.IR = strdup(empty);
+		}
 		;
 
 declarations:		%empty
@@ -150,9 +170,9 @@ declarations:		%empty
 		}
 		| declaration SEMICOLON declarations {
 			std::string temp = $1.IR;
-			temp.append(#3.IR);
+			temp.append($3.IR);
 
-			$$.IR = str.dup(temp.c_str());
+			$$.IR = strdup(temp.c_str());
 			$$.ret_name = strdup(empty);
 		}
 		;
@@ -172,7 +192,7 @@ declaration:	identifiers COLON INTEGER
 					variable = variables.substr(prev, current);
 					temp.append(variable);
 					temp.append("\n");
-					stop = true;
+					stop = false;
 				}
 				else{
 					size_t l = current - prev;
@@ -189,8 +209,12 @@ declaration:	identifiers COLON INTEGER
 		
 		;
 
-statements:		{printf("statements -> epsilon\n");}
-		| statement SEMICOLON statements {printf("statements -> statement SEMICOLON statements\n");}
+statements:		{
+			$$ = "";
+		}
+		| statement SEMICOLON statements {
+			$$ = $1 + "\n" + $3;
+		}
 		;
 
 statement:	WRITE vars {printf("statement -> WRITE vars\n");}
@@ -204,56 +228,251 @@ statement:	WRITE vars {printf("statement -> WRITE vars\n");}
 		| var ASSIGN expression {printf("statement -> var ASSIGN expression\n");}
 		;
 
-bool_exp:	relation_and_exp {printf("bool_exp -> relation_and_exp\n");}
+bool_exp:	relation_and_exp {
+			$$ = $1;
+		}
 		;
 
-relation_and_exp:  relation_exp {printf("relation_and_exp -> relation_exp\n");}
-		   ;
-
-relation_exp:	expression comp	expression {printf("relation_exp -> expression comp expression\n");}
-		| TRUE {printf("relation_exp -> TRUE\n");}
-		| FALSE {printf("relation_exp -> FALSE\n");}
-             	| L_PAREN bool_exp R_PAREN {printf("relation_exp -> L_PAREN bool_expr R_PAREN\n");}
-		| NOT expression comp expression {printf("relation_exp -> NOT expression comp expression\n");}
-             	| NOT TRUE {printf("relation_exp -> NOT TRUE\n");}
-             	| NOT FALSE {printf("relation_exp -> NOT FALSE\n");}
-             	| NOT L_PAREN bool_exp R_PAREN {printf("relation_exp -> NOT L_PAREN bool_expr R_PAREN\n");}
+relation_and_exp:  relation_exp {printf(
+			$$ = $1;
+		}
 		;
 
-expression:	multiplicative_expression {printf("expression -> multiplicative_expression\n");}
-		| multiplicative_expression ADD multiplicative_expression {printf("expression -> multiplicative_expression ADD multiplicative_expression\n");}
-		| multiplicative_expression SUB multiplicative_expression {printf("expression -> multiplicative_expression SUB multiplicative_expression\n");}
+relation_exp:	expression comp	expression {
+			std::string temp;
+			std::string temp2 = Temp2();
+			temp.append($1.IR);
+  			temp.append($3.IR);
+  			temp.append(". ");
+  			temp.append(temp2);
+  			temp.append("\n");
+  			temp.append($2.ret_name);
+  			temp.append(dest);
+  			temp.append(", ");
+  			temp.append($1.ret_name);
+  			temp.append(", ");
+  			temp.append($3.ret_name);
+  			temp.append("\n");
+  			$$.IR = strdup(temp.c_str());
+  			$$.ret_name = strdup(temp2.c_str());
+		}
+		| TRUE {
+			char temp[2] = "1";
+			$$.ret_name = strdup(temp);
+			$$.IR = strdup(empty);
+		}
+		| FALSE {printf(
+			char temp[2] = "0";
+			$$.ret_name = strdup(temp);
+			$$.IR = strdup(empty);
+		}
+             	| L_PAREN bool_exp R_PAREN {
+			$$.ret_name = strdup($2.ret_name);
+  			$$.IR = strdup($2.IR);
+		}
+		| NOT expression comp expression {
+			std::string temp2 = Temp2();
+  			std::string temp;
+ 		 	temp.append($2.IR);
+  			temp.append(". ");
+  			temp.append(temp2);
+  			temp.append("\n");
+ 			temp.append("! ");
+  			temp.append(temp2);
+  			temp.append(", ");
+  			temp.append($2.ret_name);
+  			temp.append("\n");
+  			$$.IR = strdup(temp.c_str());
+  			$$.ret_name = strdup(temp2.c_str());	
+		}
+             	| NOT TRUE {}
+             	| NOT FALSE {}
+             	| NOT L_PAREN bool_exp R_PAREN {}
 		;
 
-multiplicative_expression:    term {printf("multiplicative_expression -> term\n");}
-			| term MOD term {printf("multiplicative_expression -> term MOD term\n");}
-			| term MULT term {printf("multiplicative_expr -> term MULT term\n");}
-                   	| term DIV term {printf("multiplicative_expr -> term DIV term\n");}
+expression:	multiplicative_expression {
+			$$.IR = strdup($1.IR);
+  			$$.ret_name = strdup($1.ret_name);
+		}
+		| multiplicative_expression ADD multiplicative_expression {
+			$$.ret_name = strdup(Temp2().c_str());
+  			std::string temp;
+  			temp.append($1.IR);
+  			temp.append($3.IR);
+  			temp.append(". ");
+  			temp.append($$.ret_name);
+  			temp.append("\n");
+  			temp.append("+ ");
+  			temp.append($$.ret_name);
+  			temp.append(", ");
+  			temp.append($1.ret_name);
+  			temp.append(", ");
+  			temp.append($3.ret_name);
+  			temp.append("\n");
+  			$$.IR = strdup(temp.c_str());
+		}
+		| multiplicative_expression SUB multiplicative_expression {
+			$$.ret_name = strdup(Temp2().c_str());
+                        std::string temp;
+                        temp.append($1.IR);
+                        temp.append($3.IR);
+                        temp.append(". ");
+                        temp.append($$.ret_name);
+                        temp.append("\n");
+                        temp.append("- ");
+                        temp.append($$.ret_name);
+                        temp.append(", ");
+                        temp.append($1.ret_name);
+                        temp.append(", ");
+                        temp.append($3.ret_name);
+                        temp.append("\n");
+                        $$.IR = strdup(temp.c_str());
+		}
+		;
+
+multiplicative_expression:    term {printf(
+				$$.IR = strdup($1.IR);
+				$$.ret_name = strdup($1.place);
+			}
+			| term MOD term {
+				$$.ret_name = strdup(Temp2().c_str());
+  				std::string temp;
+  				temp.append(". ");
+  				temp.append($$.ret_name);
+  				temp.append("\n");
+  				temp.append($1.IR);
+  				temp.append($3.IR);
+  				temp.append("% ");
+  				temp.append($$.ret_name);
+  				temp.append(", ");
+  				temp.append($1.ret_name);
+  				temp.append(", ");
+  				temp.append($3.ret_name);
+  				temp.append("\n");
+  				$$.IR = strdup(temp.c_str());
+			}
+			| term MULT term {printf(
+				$$.ret_name = strdup(Temp2().c_str());
+                                std::string temp;
+                                temp.append(". ");
+                                temp.append($$.ret_name);
+                                temp.append("\n");
+                                temp.append($1.IR);
+                                temp.append($3.IR);
+                                temp.append("* ");
+                                temp.append($$.ret_name);
+                                temp.append(", ");
+                                temp.append($1.ret_name);
+                                temp.append(", ");
+                                temp.append($3.ret_name);
+                                temp.append("\n");
+                                $$.IR = strdup(temp.c_str());
+			}
+                   	| term DIV term {printf(
+				$$.ret_name = strdup(Temp2().c_str());
+                                std::string temp;
+                                temp.append(". ");
+                                temp.append($$.ret_name);
+                                temp.append("\n");
+                                temp.append($1.IR);
+                                temp.append($3.IR);
+                                temp.append("% ");
+                                temp.append($$.ret_name);
+                                temp.append(", ");
+                                temp.append($1.ret_name);
+                                temp.append(", ");
+                                temp.append($3.ret_name);
+                                temp.append("\n");
+                                $$.IR = strdup(temp.c_str());
+			}
 			;
 
 
-comp:		EQ {printf("comp -> EQ\n");}
-		| GTE {printf("comp -> GTE\n");}
-		|  NEQ {printf("comp -> NEQ\n");}
-   		|  LT {printf("comp -> LT\n");}
-   		|  GT {printf("comp -> GT\n");}
-   		|  LTE {printf("comp -> LTE\n");}
+comp:		EQ {
+			$$ = "==";
+		}
+		| GTE {
+			$$ = ">=";
+		}
+		|  NEQ {
+			$$ = "!=";
+		}
+   		|  LT {
+			$$ = "<";
+		}
+   		|  GT {
+			$$ = ">";
+		}
+   		|  LTE {
+			$$ = "<=";
+		}
 		;
 
-term:		var {printf("term -> var\n");}
-		| NUMBER {printf("term -> NUMBER\n");}
-		| SUB var {printf("term -> SUB var\n");}
-		| SUB NUMBER {printf("term -> SUB NUMBER\n");}
-		| SUB L_PAREN expression R_PAREN {printf("term -> SUB L_PAREN expression R_PAREN\n");}	
-		| ident L_PAREN expression R_PAREN {printf("term -> identifier L_PAREN expression R_PAREN \n");}
+term:		var {
+			$$.ret_name = Temp2();
+			$$.IR += ". " + $$.ret_name + "\n";
+		}
+		| NUMBER {
+			int val = int($1);
+			$$.ret_name = Temp2();
+			$$.IR += std::to_string(val);
+		}
+		| SUB var {
+			$$.ret_name = Temp2();
+			$$.IR += ". " + $$.ret_name + "\n";
+		}
+		| SUB NUMBER {
+			$$.ret_name = Temp2();
+			$$.IR += ". " + $$.ret_name + "\n";
+			$$.IR = "-1 * ";
+			$$.IR += $2;
+			$$.IR += "\n";
+		}
+		| SUB L_PAREN expression R_PAREN {
+			$$.ret_name = Temp2();
+			$$.IR += ". " + $$.ret_name + "\n";
+			$$.IR = "(" + $3.ret_name + ")" + "\n" + $3.IR;
+		}	
+		| ident L_PAREN expression R_PAREN {
+			$$.ret_name = Temp2();
+                        $$.IR += ". " + $$.ret_name + "\n"; 
+			$$.IR += $1 + $3.ret_name + $3.IR;
+		}
 		;
 
-var:	    ident {printf("var -> ident\n");}
-	    | ident L_SQUARE_BRACKET expression R_SQUARE_BRACKET {printf("var -> ident L_SQUARE_BRACKET expression R_SQUARE_BRACKET\n");}
+var:	    ident {
+			$$.IR = strdup(empty);
+  			$$.ret_name = strdup($1.ret_name);
+		}	
+	    | ident L_SQUARE_BRACKET expression R_SQUARE_BRACKET {
+			std::string temp;
+  			temp.append($1.ret_name);
+  			temp.append(", ");
+  			temp.append($3.IR);
+  			$$.IR = strdup($3.IR);
+  			$$.ret_name = strdup(temp.c_str());
+		}
 	    ;
 
-vars: var {printf("vars -> var\n");}
-    | var COMMA vars {printf("vars -> var COMMA vars\n");}
+vars: var {
+			std::string temp;
+			temp.append($1.IR);
+			temp.append(".| ");
+			temp.append($1.ret_name);
+  			temp.append("\n");
+  			$$.IR = strdup(temp.c_str());
+  			$$.ret_name = strdup(empty);
+		}
+    | var COMMA vars {
+			std::string temp;
+                        temp.append($1.IR);
+                        temp.append(".| ");
+                        temp.append($1.ret_name);
+                        temp.append("\n");
+			temp.append($3.IR);
+                        $$.IR = strdup(temp.c_str());
+                        $$.ret_name = strdup(empty);
+		}
     ;
 
 %%
@@ -267,7 +486,17 @@ void yyerror(const char *msg) {
    printf("Line %d, position %d: %s\n", currLine, currPos, msg);
 }
 
+std::string Temp2() {
+  static int num = 0;
+  std::string temp = "_temp_" + std::to_string(++num);
+  return temp;
+}
 
+std::string Label2() {
+  static int num = 0;
+  std::string temp = "L" + std::to_string(++num);
+  return temp;
+}
 
 
 
